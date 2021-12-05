@@ -6,10 +6,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test:functions": "jest ./functions"
+    "test": "jest"
   },
   "dependencies": {
-    "airtable": "^0.8.1",
+    "airtable": "^0.11.1",
     "dotenv": "^8.2.0",
     "just-has": "^2.0.1",
     "just-pick": "^4.0.1",
@@ -28,7 +28,6 @@
     "@testing-library/jest-dom": "^5.16.0",
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
-    "@types/airtable": "^0.10.1",
     "@types/jest": "^27.0.3",
     "@types/node": "16.11.11",
     "@types/react": "17.0.37",

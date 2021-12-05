@@ -1,11 +1,11 @@
 // Loving copied from https://github.com/angus-c/just/blob/master/packages/array-sort-by/index.js and modified
-type IIteratee<T> = string | ((val: T) => any);
+type IIteratee<T> = keyof T | ((val: T) => any);
 export type ISortCondition<T> = {
   iteratee: IIteratee<T>;
   direction: 'asc' | 'desc';
 };
 
-function handleSort<T>(
+function handleSort<T extends Record<string, any>>(
   sortConditions: ISortCondition<T>[]
 ): (a: T, b: T) => number {
   return function (a, b) {
@@ -15,8 +15,20 @@ function handleSort<T>(
       .slice()
       .reverse()
       .forEach(({ iteratee, direction }, index) => {
-        var keyA = typeof iteratee === 'string' ? a[iteratee] : iteratee(a);
-        var keyB = typeof iteratee === 'string' ? b[iteratee] : iteratee(b);
+        let keyA, keyB;
+
+        switch (typeof iteratee) {
+          case 'string':
+            keyA = a[iteratee];
+            keyB = b[iteratee];
+            break;
+          case 'function':
+            keyA = iteratee(a);
+            keyB = iteratee(b);
+            break;
+          default:
+            throw new Error('iteratee must be string or functions');
+        }
 
         if (typeof keyA === 'string' && typeof keyB === 'string') {
           keyA = keyA.toUpperCase();

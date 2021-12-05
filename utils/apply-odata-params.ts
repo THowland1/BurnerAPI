@@ -1,7 +1,7 @@
 import parser from 'odata-parser';
 import safeGet from 'just-safe-get';
-import { ISortCondition, sortByAll } from './sortByAll';
-import { deepPick } from './deepPick';
+import { ISortCondition, sortByAll } from './sort-by-all';
+import { deepPick } from './deep-pick';
 import get from 'just-safe-get';
 
 type ODataParams = {
@@ -134,7 +134,7 @@ const getOperandLabel = <T>(item: T, operand: Operand) => {
       throw new Error('Could not figure out which value is wanted');
   }
 };
-const getFilterFn = ($filter: Filter) => {
+const getFilterFn = <U>($filter: Filter): ((o: U) => boolean) => {
   switch ($filter.type) {
     case 'eq':
       return <T>(o: T) =>
@@ -224,8 +224,6 @@ function parseODataQueryString(odataQueryString: string) {
   const parsed: Partial<ODataParams> = odataQueryString
     ? parser.parse(odataQueryString)
     : {};
-
-  console.log(parsed);
 
   return { ...defaults, ...parsed };
 }
