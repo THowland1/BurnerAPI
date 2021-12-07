@@ -9,6 +9,10 @@
     "test": "jest"
   },
   "dependencies": {
+    "@emotion/react": "^11.7.0",
+    "@emotion/styled": "^11.6.0",
+    "@mui/icons-material": "^5.2.1",
+    "@mui/material": "^5.2.3",
     "airtable": "^0.11.1",
     "dotenv": "^8.2.0",
     "just-has": "^2.0.1",
