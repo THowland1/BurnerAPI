@@ -1,9 +1,16 @@
-import { Card, CardContent, Paper, Theme, Typography } from '@mui/material';
+import { Button, Card, CardContent, Theme, Typography } from '@mui/material';
 import { Box, styled, useTheme } from '@mui/system';
 import type { NextPage } from 'next';
 import Head from 'next/head';
 import Image from 'next/image';
-import React, { FC } from 'react';
+import React, { FC, useState } from 'react';
+import dynamic from 'next/dynamic';
+import json5 from 'json5';
+
+const JSONEditor = dynamic(() => import('../components/json-editor'), {
+  loading: () => <>...</>,
+  ssr: false,
+});
 
 const GutterContainer: FC = ({ children }) => (
   <Box
@@ -25,6 +32,17 @@ const GutterContainer: FC = ({ children }) => (
 
 const Home: NextPage = () => {
   const theme = useTheme<Required<Theme>>();
+  const [data, setData] = useState<string>(`[
+
+]`);
+
+  const prettify = () => {
+    const asJson = json5.parse(data);
+    console.log(asJson);
+    const asString = json5.stringify(asJson, null, 4);
+    console.log(asString);
+    setData(asString);
+  };
   return (
     <Box>
       <Head>
@@ -75,6 +93,37 @@ const Home: NextPage = () => {
               <Typography variant='body1' color={theme.palette.text.disabled}>
                 Paste JSON into here
               </Typography>
+              <Box
+                sx={{
+                  position: 'relative',
+                }}
+              >
+                <JSONEditor
+                  style={{
+                    width: '100%',
+                    borderRadius: '.5rem',
+                    paddingTop: '0.5rem',
+                  }}
+                  value={data}
+                  onChange={(newData) => setData(newData)}
+                />
+
+                <Button
+                  variant='contained'
+                  color='secondary'
+                  size='small'
+                  onClick={() => prettify()}
+                  style={{
+                    position: 'absolute',
+                    bottom: '0.5rem',
+                    right: '0.5rem',
+                    zIndex: 1,
+                    borderRadius: '100rem',
+                  }}
+                >
+                  Prettify
+                </Button>
+              </Box>
             </CardContent>
           </Card>
         </GutterContainer>
