@@ -8,6 +8,7 @@ export const theme = createTheme({
       main: '#00AD9F',
       dark: '#15847B',
       '900': '#0D544E',
+      contrastText: '#FFFFFF',
     },
     secondary: {
       '50': '#F7F8F8',
@@ -22,6 +23,13 @@ export const theme = createTheme({
       '500': '#A3A9AC',
       '700': '#7D8589',
       '900': '#2D3B41',
+    },
+    success: {
+      '50': '#C9EEEA',
+      light: '#00C7B7',
+      main: '#00AD9F',
+      dark: '#15847B',
+      '900': '#0D544E',
     },
     error: {
       '50': '#FED7E2',

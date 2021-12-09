@@ -1,12 +1,20 @@
-import { Button, Card, CardContent, Theme, Typography } from '@mui/material';
-import { Box, styled, useTheme } from '@mui/system';
+import {
+  Button,
+  Card,
+  CardContent,
+  Color,
+  PaletteColor,
+  Theme,
+  Typography,
+} from '@mui/material';
+import { Box, useTheme } from '@mui/system';
 import type { NextPage } from 'next';
 import Head from 'next/head';
-import Image from 'next/image';
 import React, { FC, useState } from 'react';
 import dynamic from 'next/dynamic';
 import json5 from 'json5';
-
+import compare from 'just-compare';
+import GenerateSchema from 'generate-schema';
 const JSONEditor = dynamic(() => import('../components/json-editor'), {
   loading: () => <>...</>,
   ssr: false,
@@ -30,19 +38,104 @@ const GutterContainer: FC = ({ children }) => (
   </Box>
 );
 
+const Criterion: FC<{ success: boolean }> = (props) => {
+  const theme = useTheme<Required<Theme>>();
+
+  const palette: Partial<Color> & PaletteColor = props.success
+    ? theme.palette.success
+    : theme.palette.error;
+  return (
+    <Box sx={{ display: 'flex', marginTop: '1rem' }}>
+      <Box
+        sx={{
+          background: palette[50],
+          padding: '.5rem',
+          borderRadius: '2rem',
+        }}
+      >
+        <Box
+          sx={{
+            background: palette.light,
+            padding: '.5rem',
+            borderRadius: '1rem',
+          }}
+        ></Box>
+      </Box>
+      <Box sx={{ flex: 1, alignSelf: 'center', paddingLeft: '0.5rem' }}>
+        <Typography variant='body1'>{props.children}</Typography>
+      </Box>
+    </Box>
+  );
+};
+
 const Home: NextPage = () => {
   const theme = useTheme<Required<Theme>>();
   const [data, setData] = useState<string>(`[
 
 ]`);
 
-  const prettify = () => {
-    const asJson = json5.parse(data);
-    console.log(asJson);
+  const prettify = (s: string) => {
+    const asJson = json5.parse(s);
     const asString = json5.stringify(asJson, null, 4);
-    console.log(asString);
-    setData(asString);
+    return asString;
   };
+
+  const analyseJSONString = (s: string) => {
+    const response = {
+      isValidJSON5: false,
+      isArray: false,
+      isntEmpty: false,
+      isArrayOfObjects: false,
+      isArrayOfSameType: false,
+    };
+
+    let json: any;
+    try {
+      json = json5.parse(s);
+      response.isValidJSON5 = true;
+    } catch {
+      return response;
+    }
+
+    if (Array.isArray(json)) {
+      response.isArray = true;
+    } else {
+      return response;
+    }
+
+    if (json.length >= 1) {
+      response.isntEmpty = true;
+    } else {
+      return response;
+    }
+
+    const schema = GenerateSchema.json('data', json);
+    console.log(schema.items);
+    if (schema.items.type === 'object') {
+      response.isArrayOfObjects = true;
+    } else {
+      return response;
+    }
+
+    const keys = Object.keys(schema.items.properties);
+    const requiredKeys = schema.items.required;
+    const eachPropHasSingleType = (
+      Object.values(schema.items.properties) as { type: any }[]
+    ).every((o) => typeof o.type === 'string');
+    if (
+      (!requiredKeys || compare(keys, requiredKeys)) &&
+      eachPropHasSingleType
+    ) {
+      response.isArrayOfSameType = true;
+    } else {
+      return response;
+    }
+
+    return response;
+  };
+
+  const analysedData = analyseJSONString(data);
+
   return (
     <Box>
       <Head>
@@ -112,7 +205,8 @@ const Home: NextPage = () => {
                   variant='contained'
                   color='secondary'
                   size='small'
-                  onClick={() => prettify()}
+                  disabled={!analysedData.isValidJSON5}
+                  onClick={() => setData(prettify(data))}
                   style={{
                     position: 'absolute',
                     bottom: '0.5rem',
@@ -124,6 +218,30 @@ const Home: NextPage = () => {
                   Prettify
                 </Button>
               </Box>
+
+              <Criterion success={analysedData.isValidJSON5}>
+                Valid JSON
+              </Criterion>
+              <Criterion success={analysedData.isArray}>
+                Valid JSON array
+              </Criterion>
+              <Criterion success={analysedData.isntEmpty}>
+                Array is not emptys
+              </Criterion>
+              <Criterion success={analysedData.isArrayOfObjects}>
+                All items are objects
+              </Criterion>
+              <Criterion success={analysedData.isArrayOfSameType}>
+                All items have the same type
+              </Criterion>
+              <Button
+                variant='contained'
+                disabled={!analysedData.isArrayOfSameType}
+                onClick={() => {}}
+                style={{ width: '100%', marginTop: '1rem' }}
+              >
+                Create API
+              </Button>
             </CardContent>
           </Card>
         </GutterContainer>
@@ -136,3 +254,9 @@ const Home: NextPage = () => {
 };
 
 export default Home;
+
+// PreWork is diff from oroject
+// they want me to mark,
+// callum can help
+// they expect me to do it
+//
