@@ -220,7 +220,15 @@ function parseODataQueryString(odataQueryString: string) {
     $skip: 0,
     $top: 10,
   };
-  // TODO remove non-OData params
+  odataQueryString = odataQueryString
+    .split('&')
+    .filter((keyValue) =>
+      ['$filter', '$orderby', '$select', '$skip', '$top'].includes(
+        keyValue.split('=')[0]
+      )
+    )
+    .join('&');
+  console.log(odataQueryString);
   const parsed: Partial<ODataParams> = odataQueryString
     ? parser.parse(odataQueryString)
     : {};

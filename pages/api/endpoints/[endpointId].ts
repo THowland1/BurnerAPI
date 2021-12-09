@@ -8,6 +8,7 @@ export default async function handler(
   res: NextApiResponse<any>
 ) {
   const { endpointId } = req.query;
+  const requestUri = decodeURI(req.url || '');
   try {
     if (Array.isArray(endpointId)) {
       throw new Error(
@@ -19,17 +20,15 @@ export default async function handler(
     switch (req.method) {
       case 'GET':
         const existingEndpoint = await endpoints.find(endpointId);
+        console.log(existingEndpoint);
         const rawData = existingEndpoint.fields.raw;
         if (typeof rawData !== 'string') {
           throw new Error('rawData must be a string');
         }
+
         const data: Array<unknown> = JSON.parse(rawData);
-        const queryString = Object.entries(req.query)
-          .map(
-            ([key, value]) =>
-              `${key}=${typeof value === 'string' ? value : value.join(',')}`
-          )
-          .join('&');
+
+        const queryString = requestUri.split('?')?.[1] || '';
         const processedData = applyODataParams(data, queryString);
         res.status(200).json(processedData);
         break;
@@ -49,6 +48,6 @@ export default async function handler(
         break;
     }
   } catch (error) {
-    res.status(500);
+    res.status(500).json({ error: 'no' });
   }
 }
