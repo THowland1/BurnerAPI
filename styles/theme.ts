@@ -39,7 +39,7 @@ export const theme = createTheme({
       '900': '#BE131E',
     },
     background: {
-      default: '#F7F8F8',
+      default: '#F7FCFC',
       paper: '#FFFFFF',
     },
     text: {
