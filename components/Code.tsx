@@ -83,7 +83,7 @@ const Editor = styled('div')`
   }
 
   .token.punctuation {
-    color: ${(props) => props.theme.palette.grey[50]};
+    color: ${(props) => props.theme.palette.primary[50]};
   }
 
   .token.namespace {
@@ -93,7 +93,7 @@ const Editor = styled('div')`
   .token.tag,
   .token.operator,
   .token.number {
-    color: ${(props) => props.theme.palette.grey[50]};
+    color: ${(props) => props.theme.palette.primary[50]};
   }
 
   .token.property,
@@ -116,7 +116,6 @@ const Editor = styled('div')`
   code.language-css,
   code.language-scss,
   .token.boolean,
-  .token.string,
   .token.entity,
   .token.url,
   .language-css .token.string,
@@ -130,6 +129,10 @@ const Editor = styled('div')`
   .token.statement,
   .token.regex,
   .token.atrule {
+    color: ${(props) => props.theme.palette.primary[50]};
+  }
+
+  .token.string {
     color: ${(props) => props.theme.palette.grey[50]};
   }
 
