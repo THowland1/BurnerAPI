@@ -26,7 +26,9 @@ const JSONEditor: FC<IAceEditorProps> = (props) => {
       theme='monokai'
       name='UNIQUE_ID_OF_DIV'
       editorProps={{ $blockScrolling: true }}
-      setOptions={{ useWorker: false }}
+      setOptions={{
+        useWorker: false,
+      }}
       {...props}
     />
   );

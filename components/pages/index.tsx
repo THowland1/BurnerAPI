@@ -15,6 +15,7 @@ import type { NextPage } from 'next';
 import dynamic from 'next/dynamic';
 import Head from 'next/head';
 import React, { FC, useState } from 'react';
+import Code from '../Code';
 import ParamsTable from './ParamsTable';
 const JSONEditor = dynamic(() => import('../json-editor'), {
   loading: () => <>...</>,
@@ -280,9 +281,7 @@ const Home: NextPage = () => {
                 padding: '.5rem 1rem',
               }}
             >
-              <Typography variant='inherit' component='code'>
-                {`C:\\\\projects > code .`}
-              </Typography>
+              <Code language='bash'>{`curl "https://api.tomhowland.com/odata/rec1748295?skip=0"`}</Code>
             </Box>
             <Spacer size='.5rem' />
             <Typography variant='body1' color={theme.palette.text.disabled}>
@@ -296,11 +295,18 @@ const Home: NextPage = () => {
                 padding: '.5rem 1rem',
               }}
             >
-              <Typography variant='inherit' component='code'>
-                <pre>[ yello: 12 ]</pre>
-              </Typography>
+              <Code language='json5'>{`{
+    yello: 12, // ruh ruh 
+    "crumbly": 'ddddd',
+    randy: {
+      ishe: false
+    }
+}`}</Code>
             </Box>
             <Spacer size='.5rem' />
+            <Typography variant='body1' color={theme.palette.text.disabled}>
+              Parameters
+            </Typography>
             <ParamsTable />
           </CardContent>
         </Card>
