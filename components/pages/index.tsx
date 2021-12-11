@@ -23,7 +23,7 @@ const JSONEditor = dynamic(() => import('../json-editor'), {
 });
 
 const Spacer: FC<{ size?: string }> = ({ size = '1rem' }) => (
-  <Box sx={{ height: size, width: size }} />
+  <Box sx={{ display: 'inline-block', height: size, width: size }} />
 );
 
 const GutterContainer: FC = ({ children }) => (
@@ -76,13 +76,14 @@ const Criterion: FC<{ success: boolean }> = (props) => {
 
 const Home: NextPage = () => {
   const theme = useTheme<Required<Theme>>();
+  const [editorFontSize, setEditorFontSize] = useState(1);
   const [data, setData] = useState<string>(`[
 
 ]`);
 
   const prettify = (s: string) => {
     const asJson = json5.parse(s);
-    const asString = json5.stringify(asJson, null, 4);
+    const asString = json5.stringify(asJson, null, 2);
     return asString;
   };
 
@@ -205,24 +206,55 @@ const Home: NextPage = () => {
                   }}
                   value={data}
                   onChange={(newData) => setData(newData)}
+                  fontSize={editorFontSize + 'rem'}
                 />
 
-                <Button
-                  variant='contained'
-                  color='secondary'
-                  size='small'
-                  disabled={!analysedData.isValidJSON5}
-                  onClick={() => setData(prettify(data))}
-                  style={{
+                <Box
+                  sx={{
                     position: 'absolute',
                     bottom: '0.5rem',
                     right: '0.5rem',
                     zIndex: 1,
-                    borderRadius: '100rem',
                   }}
                 >
-                  Prettify
-                </Button>
+                  <Button
+                    variant='contained'
+                    color='secondary'
+                    size='small'
+                    disabled={!analysedData.isValidJSON5}
+                    onClick={() => setData(prettify(data))}
+                    style={{
+                      borderRadius: '100rem',
+                    }}
+                  >
+                    Prettify
+                  </Button>
+                  <Spacer size='.5rem' />
+                  <Button
+                    variant='contained'
+                    color='secondary'
+                    size='small'
+                    onClick={() => setEditorFontSize(editorFontSize - 0.1)}
+                    style={{
+                      borderRadius: '100rem',
+                      width: '2rem',
+                    }}
+                  >
+                    -
+                  </Button>
+                  <Spacer size='.5rem' />
+                  <Button
+                    variant='contained'
+                    color='secondary'
+                    size='small'
+                    onClick={() => setEditorFontSize(editorFontSize + 0.1)}
+                    style={{
+                      borderRadius: '100rem',
+                    }}
+                  >
+                    +
+                  </Button>
+                </Box>
               </Box>
 
               <Criterion success={analysedData.isValidJSON5}>
@@ -232,10 +264,13 @@ const Home: NextPage = () => {
                 Valid JSON array
               </Criterion>
               <Criterion success={analysedData.isntEmpty}>
-                Array is not emptys
+                Array is not empty
               </Criterion>
               <Criterion success={analysedData.isArrayOfObjects}>
                 All items are objects
+              </Criterion>
+              <Criterion success={analysedData.isArrayOfSameType}>
+                All items have the same type
               </Criterion>
               <Criterion success={analysedData.isArrayOfSameType}>
                 All items have the same type
