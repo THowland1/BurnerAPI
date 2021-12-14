@@ -9,7 +9,14 @@ export default async function handler(
   try {
     switch (req.method) {
       case 'POST':
-        const newEndpoint = await endpoints.create([{ fields: req.body }]);
+        const newEndpoint = await endpoints.create([
+          {
+            fields: {
+              idPropName: req.body.idPropName,
+              raw: JSON.stringify(req.body.raw),
+            },
+          },
+        ]);
         res.status(200).json(newEndpoint);
         break;
       case 'GET':

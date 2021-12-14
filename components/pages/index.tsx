@@ -23,6 +23,9 @@ import dynamic from 'next/dynamic';
 import Head from 'next/head';
 import React, { FC, useEffect, useState } from 'react';
 import ParamsTable from './ParamsTable';
+
+const UNSET = ' ';
+
 const JSONEditor = dynamic(() => import('../json-editor'), {
   loading: () => <>...</>,
   ssr: false,
@@ -31,6 +34,24 @@ const Code = dynamic(() => import('../Code'), {
   loading: () => <>...</>,
   ssr: false,
 });
+
+async function postData(url = '', data = {}) {
+  // Default options are marked with *
+  const response = await fetch(url, {
+    method: 'POST', // *GET, POST, PUT, DELETE, etc.
+    mode: 'cors', // no-cors, *cors, same-origin
+    cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+    credentials: 'same-origin', // include, *same-origin, omit
+    headers: {
+      'Content-Type': 'application/json',
+      // 'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    redirect: 'follow', // manual, *follow, error
+    referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+    body: JSON.stringify(data), // body data type must match "Content-Type" header
+  });
+  return response.json(); // parses JSON response into native JavaScript objects
+}
 
 const Spacer: FC<{ size?: string }> = ({ size = '1rem' }) => (
   <Box sx={{ display: 'inline-block', height: size, width: size }} />
@@ -92,12 +113,20 @@ const Home: NextPage = () => {
   const [data, setData] = useState<string>(`[
 
 ]`);
-  const [idPropName, setIdPropName] = useState<string | null>('');
+  const [idPropName, setIdPropName] = useState<string>(UNSET);
   const [idPropNameOptions, setIdPropNameOptions] = useState<string[]>([]);
+
+  const createApi = async () => {
+    const response = await postData('/api/endpoints', {
+      idPropName,
+      raw: json5.parse(data),
+    });
+    console.log(response);
+  };
 
   useEffect(() => {
     if (idPropName && !idPropNameOptions.includes(idPropName)) {
-      setIdPropName(null);
+      setIdPropName(UNSET);
     }
   }, [idPropNameOptions, idPropName]);
 
@@ -183,7 +212,7 @@ const Home: NextPage = () => {
       return response;
     }
 
-    if (idPropName) {
+    if (idPropName && idPropName !== UNSET) {
       response.hasIdColumn = true;
     } else {
       return response;
@@ -338,7 +367,6 @@ const Home: NextPage = () => {
                   <FormControl
                     variant='filled'
                     sx={{
-                      minWidth: '6rem',
                       '& *': {
                         paddingTop: 0,
                         paddingBottom: 0,
@@ -349,16 +377,19 @@ const Home: NextPage = () => {
                     <Select
                       value={idPropName}
                       fullWidth
+                      placeholder='fdbziseyfuh'
                       onChange={(e) => setIdPropName(e.target.value)}
                       sx={{
                         minWidth: '6rem',
                         '& *': {
-                          paddingTop: 0,
-                          paddingBottom: 0,
-                          paddingRight: 0,
+                          paddingTop: '0 !important',
+                          paddingBottom: '0 !important',
                         },
                       }}
                     >
+                      <MenuItem value={UNSET}>
+                        <em>select</em>
+                      </MenuItem>
                       {idPropNameOptions.map((option) => (
                         <MenuItem key={option} value={option}>
                           <code> {option} </code>
@@ -374,7 +405,7 @@ const Home: NextPage = () => {
               <Button
                 variant='contained'
                 disabled={!analysedData.allGood}
-                onClick={() => {}}
+                onClick={() => createApi()}
                 style={{ width: '100%', marginTop: '1rem' }}
               >
                 Create API
