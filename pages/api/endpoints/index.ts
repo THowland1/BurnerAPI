@@ -17,7 +17,8 @@ export default async function handler(
             },
           },
         ]);
-        res.status(200).json(newEndpoint);
+        const id = newEndpoint[0].id;
+        res.status(200).json({ endpointId: id });
         break;
       case 'GET':
         const endpointsPage1 = await endpoints.select().firstPage();

@@ -23,14 +23,11 @@ import dynamic from 'next/dynamic';
 import Head from 'next/head';
 import React, { FC, useEffect, useState } from 'react';
 import ParamsTable from './ParamsTable';
+import RestEndpointCards from './RestEndpointCards';
 
 const UNSET = ' ';
 
 const JSONEditor = dynamic(() => import('../json-editor'), {
-  loading: () => <>...</>,
-  ssr: false,
-});
-const Code = dynamic(() => import('../Code'), {
   loading: () => <>...</>,
   ssr: false,
 });
@@ -115,13 +112,14 @@ const Home: NextPage = () => {
 ]`);
   const [idPropName, setIdPropName] = useState<string>(UNSET);
   const [idPropNameOptions, setIdPropNameOptions] = useState<string[]>([]);
+  const [endpointId, setEndpointId] = useState<string | null>(null);
 
   const createApi = async () => {
     const response = await postData('/api/endpoints', {
       idPropName,
       raw: json5.parse(data),
     });
-    console.log(response);
+    setEndpointId(response.endpointId);
   };
 
   useEffect(() => {
@@ -415,62 +413,7 @@ const Home: NextPage = () => {
         </GutterContainer>
       </Box>
       <GutterContainer>
-        <Spacer size='1rem' />
-
-        <Typography variant='h3' component='h2' sx={{ paddingBottom: '.5rem' }}>
-          Endpoints
-        </Typography>
-
-        <Typography variant='h4' component='p' sx={{ paddingBottom: '.5rem' }}>
-          REST
-        </Typography>
-
-        <Card elevation={2}>
-          <CardContent>
-            <Typography variant='h3' component='h2'>
-              Get all
-            </Typography>
-            <Spacer size='.5rem' />
-            <Typography variant='body1' color={theme.palette.text.disabled}>
-              cURL
-            </Typography>
-            <Box
-              sx={{
-                borderRadius: '.5rem',
-                backgroundColor: theme.palette.grey['900'],
-                color: 'white',
-                padding: '.5rem 1rem',
-              }}
-            >
-              <Code language='bash'>{`curl "https://api.tomhowland.com/odata/rec1748295?skip=0"`}</Code>
-            </Box>
-            <Spacer size='.5rem' />
-            <Typography variant='body1' color={theme.palette.text.disabled}>
-              Response
-            </Typography>
-            <Box
-              sx={{
-                borderRadius: '.5rem',
-                backgroundColor: theme.palette.grey['900'],
-                color: 'white',
-                padding: '.5rem 1rem',
-              }}
-            >
-              <Code language='json5'>{`{
-    yello: 12, // ruh ruh 
-    "crumbly": 'ddddd',
-    randy: {
-      ishe: false
-    }
-}`}</Code>
-            </Box>
-            <Spacer size='.5rem' />
-            <Typography variant='body1' color={theme.palette.text.disabled}>
-              Parameters
-            </Typography>
-            <ParamsTable />
-          </CardContent>
-        </Card>
+        <RestEndpointCards endpointId={endpointId} />
       </GutterContainer>
       <GutterContainer>
         <Box component='footer'>Footer</Box>
