@@ -10,9 +10,6 @@ const Code: FC<{ language: 'json5' | 'bash' }> = ({ children, language }) => {
     require('prismjs/components/prism-bash.min');
     Prism.highlightAll();
   }, []);
-  useEffect(() => {
-    Prism.highlightAll();
-  }, [children]);
   return (
     <Editor>
       <pre className={`language-${language}`}>

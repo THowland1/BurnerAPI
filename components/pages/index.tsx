@@ -8,6 +8,7 @@ import {
   MenuItem,
   PaletteColor,
   Select,
+  styled,
   Theme,
   Typography,
 } from '@mui/material';
@@ -21,9 +22,12 @@ import type { NextPage } from 'next';
 import dynamic from 'next/dynamic';
 import Head from 'next/head';
 import React, { FC, useEffect, useState } from 'react';
-import Code from '../Code';
 import ParamsTable from './ParamsTable';
 const JSONEditor = dynamic(() => import('../json-editor'), {
+  loading: () => <>...</>,
+  ssr: false,
+});
+const Code = dynamic(() => import('../Code'), {
   loading: () => <>...</>,
   ssr: false,
 });
@@ -57,7 +61,7 @@ const Criterion: FC<{ success: boolean }> = (props) => {
     ? theme.palette.success
     : theme.palette.error;
   return (
-    <Box sx={{ display: 'flex', marginTop: '1rem' }}>
+    <Box sx={{ display: 'flex', marginTop: '1rem', alignItems: 'center' }}>
       <Box
         sx={{
           background: palette[50],
@@ -74,7 +78,9 @@ const Criterion: FC<{ success: boolean }> = (props) => {
         ></Box>
       </Box>
       <Box sx={{ flex: 1, alignSelf: 'center', paddingLeft: '0.5rem' }}>
-        <Typography variant='body1'>{props.children}</Typography>
+        <Typography variant='body1' component='span'>
+          {props.children}
+        </Typography>
       </Box>
     </Box>
   );
@@ -109,8 +115,12 @@ const Home: NextPage = () => {
     if (schema.items.type !== 'object') {
       return;
     }
-
-    const keys = Object.keys(schema.items.properties);
+    const props = Object.entries(schema.items.properties);
+    const keys = props
+      .filter(
+        ([_, value]) => value.type === 'number' || value.type === 'string'
+      )
+      .map(([key]) => key);
     setIdPropNameOptions(keys);
   }, [data]);
 
@@ -322,14 +332,14 @@ const Home: NextPage = () => {
                 All items have the same type
               </Criterion>
               <Criterion success={analysedData.hasIdColumn}>
-                <Box sx={{ display: 'flex' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
                   <div>Item has ID column</div>
                   &nbsp; &mdash; &nbsp;
                   <FormControl
                     variant='filled'
                     sx={{
                       minWidth: '6rem',
-                      '*, & *': {
+                      '& *': {
                         paddingTop: 0,
                         paddingBottom: 0,
                         paddingRight: 0,
@@ -340,6 +350,14 @@ const Home: NextPage = () => {
                       value={idPropName}
                       fullWidth
                       onChange={(e) => setIdPropName(e.target.value)}
+                      sx={{
+                        minWidth: '6rem',
+                        '& *': {
+                          paddingTop: 0,
+                          paddingBottom: 0,
+                          paddingRight: 0,
+                        },
+                      }}
                     >
                       {idPropNameOptions.map((option) => (
                         <MenuItem key={option} value={option}>
