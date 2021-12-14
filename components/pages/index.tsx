@@ -3,18 +3,24 @@ import {
   Card,
   CardContent,
   Color,
+  FormControl,
+  InputLabel,
+  MenuItem,
   PaletteColor,
+  Select,
   Theme,
   Typography,
 } from '@mui/material';
-import { Box, useTheme } from '@mui/system';
+import { Box, lighten, useTheme } from '@mui/system';
 import GenerateSchema from 'generate-schema';
 import json5 from 'json5';
 import compare from 'just-compare';
+import get from 'just-safe-get';
+import unique from 'just-unique';
 import type { NextPage } from 'next';
 import dynamic from 'next/dynamic';
 import Head from 'next/head';
-import React, { FC, useState } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import Code from '../Code';
 import ParamsTable from './ParamsTable';
 const JSONEditor = dynamic(() => import('../json-editor'), {
@@ -80,6 +86,33 @@ const Home: NextPage = () => {
   const [data, setData] = useState<string>(`[
 
 ]`);
+  const [idPropName, setIdPropName] = useState<string | null>('');
+  const [idPropNameOptions, setIdPropNameOptions] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (idPropName && !idPropNameOptions.includes(idPropName)) {
+      setIdPropName(null);
+    }
+  }, [idPropNameOptions, idPropName]);
+
+  useEffect(() => {
+    let json: any;
+    try {
+      json = json5.parse(data);
+    } catch {
+      return;
+    }
+    if (!Array.isArray(json)) {
+      return;
+    }
+    const schema = GenerateSchema.json('data', json);
+    if (schema.items.type !== 'object') {
+      return;
+    }
+
+    const keys = Object.keys(schema.items.properties);
+    setIdPropNameOptions(keys);
+  }, [data]);
 
   const prettify = (s: string) => {
     const asJson = json5.parse(s);
@@ -94,6 +127,9 @@ const Home: NextPage = () => {
       isntEmpty: false,
       isArrayOfObjects: false,
       isArrayOfSameType: false,
+      hasIdColumn: false,
+      hasUniqueColumns: false,
+      allGood: false,
     };
 
     let json: any;
@@ -117,7 +153,6 @@ const Home: NextPage = () => {
     }
 
     const schema = GenerateSchema.json('data', json);
-    console.log(schema.items);
     if (schema.items.type === 'object') {
       response.isArrayOfObjects = true;
     } else {
@@ -138,6 +173,20 @@ const Home: NextPage = () => {
       return response;
     }
 
+    if (idPropName) {
+      response.hasIdColumn = true;
+    } else {
+      return response;
+    }
+
+    const allIdValues = json.map((o) => get(o, idPropName));
+    if (unique(allIdValues).length === allIdValues.length) {
+      response.hasUniqueColumns = true;
+    } else {
+      return response;
+    }
+
+    response.allGood = true;
     return response;
   };
 
@@ -272,12 +321,41 @@ const Home: NextPage = () => {
               <Criterion success={analysedData.isArrayOfSameType}>
                 All items have the same type
               </Criterion>
-              <Criterion success={analysedData.isArrayOfSameType}>
-                All items have the same type
+              <Criterion success={analysedData.hasIdColumn}>
+                <Box sx={{ display: 'flex' }}>
+                  <div>Item has ID column</div>
+                  &nbsp; &mdash; &nbsp;
+                  <FormControl
+                    variant='filled'
+                    sx={{
+                      minWidth: '6rem',
+                      '*, & *': {
+                        paddingTop: 0,
+                        paddingBottom: 0,
+                        paddingRight: 0,
+                      },
+                    }}
+                  >
+                    <Select
+                      value={idPropName}
+                      fullWidth
+                      onChange={(e) => setIdPropName(e.target.value)}
+                    >
+                      {idPropNameOptions.map((option) => (
+                        <MenuItem key={option} value={option}>
+                          <code> {option} </code>
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Box>
+              </Criterion>
+              <Criterion success={analysedData.hasUniqueColumns}>
+                ID values are unique
               </Criterion>
               <Button
                 variant='contained'
-                disabled={!analysedData.isArrayOfSameType}
+                disabled={!analysedData.allGood}
                 onClick={() => {}}
                 style={{ width: '100%', marginTop: '1rem' }}
               >
@@ -354,9 +432,3 @@ const Home: NextPage = () => {
 };
 
 export default Home;
-
-// PreWork is diff from oroject
-// they want me to mark,
-// callum can help
-// they expect me to do it
-//

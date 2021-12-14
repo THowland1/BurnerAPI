@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@emotion/react": "^11.7.0",
+    "@emotion/server": "^11.4.0",
     "@emotion/styled": "^11.6.0",
     "@mui/icons-material": "^5.2.1",
     "@mui/material": "^5.2.3",
@@ -27,6 +28,7 @@
     "just-safe-set": "^4.0.1",
     "just-sort-by": "^3.0.1",
     "just-typeof": "^3.0.1",
+    "just-unique": "^4.0.1",
     "next": "12.0.7",
     "odata-parser": "^1.4.1",
     "prismjs": "^1.25.0",

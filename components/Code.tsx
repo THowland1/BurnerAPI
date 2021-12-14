@@ -5,10 +5,10 @@ import { styled } from '@mui/system';
 
 const Code: FC<{ language: 'json5' | 'bash' }> = ({ children, language }) => {
   useEffect(() => {
-    import('prismjs/components/prism-json.min')
-      .then(() => import('prismjs/components/prism-json5.min'))
-      .then(() => import('prismjs/components/prism-bash.min'))
-      .then(() => Prism.highlightAll());
+    require('prismjs/components/prism-json.min');
+    require('prismjs/components/prism-json5.min');
+    require('prismjs/components/prism-bash.min');
+    Prism.highlightAll();
   }, []);
   useEffect(() => {
     Prism.highlightAll();
