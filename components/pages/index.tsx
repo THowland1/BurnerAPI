@@ -386,14 +386,13 @@ const Home: NextPage = () => {
       <GutterContainer>
         <Spacer size='1rem' />
 
-        <Typography variant='h3' component='h2'>
+        <Typography variant='h3' component='h2' sx={{ paddingBottom: '.5rem' }}>
           Endpoints
         </Typography>
 
-        <Typography variant='h4' component='p'>
-          OData
+        <Typography variant='h4' component='p' sx={{ paddingBottom: '.5rem' }}>
+          REST
         </Typography>
-        <Spacer size='.5rem' />
 
         <Card elevation={2}>
           <CardContent>
