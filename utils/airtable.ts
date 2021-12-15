@@ -7,4 +7,7 @@ const endpoints = base(
   process.env.AIRTABLE_ENDPOINTS_TABLE_NAME || 'UNSPECIFIED'
 );
 
-export { endpoints };
+const toRecId = (id: string) => `rec${id}`;
+const fromRecId = (recId: string) => recId.substring(3);
+
+export { endpoints, toRecId, fromRecId };

@@ -54,23 +54,25 @@ const Spacer: FC<{ size?: string }> = ({ size = '1rem' }) => (
   <Box sx={{ display: 'inline-block', height: size, width: size }} />
 );
 
-const GutterContainer: FC = ({ children }) => (
-  <Box
-    sx={{
-      paddingLeft: '2rem',
-      paddingRight: '2rem',
-    }}
-  >
+const GutterContainer: FC = ({ children }) => {
+  return (
     <Box
       sx={{
-        maxWidth: '75rem',
-        margin: 'auto',
+        paddingLeft: ['1rem', '2rem', '2rem'],
+        paddingRight: ['1rem', '2rem', '2rem'],
       }}
     >
-      {children}
+      <Box
+        sx={{
+          maxWidth: '75rem',
+          margin: 'auto',
+        }}
+      >
+        {children}
+      </Box>
     </Box>
-  </Box>
-);
+  );
+};
 
 const Criterion: FC<{ success: boolean }> = (props) => {
   const theme = useTheme<Required<Theme>>();
@@ -244,10 +246,14 @@ const Home: NextPage = () => {
         }}
       >
         <GutterContainer>
-          <Typography variant='h1' component='h1'>
+          <Typography variant='h3' component='h1' sx={{ paddingTop: '.5rem' }}>
             BurnerAPI
           </Typography>
-          <Typography variant='h3' component='p'>
+          <Typography
+            variant='body1'
+            component='div'
+            sx={{ paddingBottom: '.5rem' }}
+          >
             Instanly turn a JSON string into a REST endpoint
           </Typography>
         </GutterContainer>

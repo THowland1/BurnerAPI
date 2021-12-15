@@ -20,7 +20,7 @@ const AceEditor = dynamic(
   }
 );
 
-const JSONEditor: FC<IAceEditorProps & { fontSize: string }> = ({
+const JSONEditor: FC<IAceEditorProps & { fontSize?: string }> = ({
   fontSize = '1rem',
   ...props
 }) => {
@@ -35,9 +35,12 @@ const JSONEditor: FC<IAceEditorProps & { fontSize: string }> = ({
           fontFamily: 'monospace',
           tabSize: 2,
           fontSize,
-          minLines: 10,
-          maxLines: 20,
+          minLines: props.minLines ?? 10,
+          maxLines: props.maxLines ?? 20,
+          highlightGutterLine: props.highlightActiveLine ?? true,
         }}
+        wrapEnabled
+        width='100%'
         {...props}
       />
     </Editor>
@@ -70,7 +73,7 @@ const Editor = styled('div')`
     color: ${(props) => props.theme.palette.grey[50]};
   }
   .ace_marker-layer .ace_selection {
-    background: ${(props) => props.theme.palette.grey[600]};
+    background: ${(props) => props.theme.palette.grey[700]};
   }
   .ace-monokai.ace_multiselect .ace_selection.ace_start {
     box-shadow: 0 0 3px 0px #272822;
@@ -123,8 +126,8 @@ const Editor = styled('div')`
     color: #66d9ef;
   }
   .ace_fold {
-    background-color: #a6e22e;
-    border-color: #f8f8f2;
+    background-color: ${(props) => props.theme.palette.primary.dark};
+    border-color: ${(props) => props.theme.palette.grey[900]};
   }
   .ace_storage.ace_type,
   .ace_support.ace_class,

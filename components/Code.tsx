@@ -15,7 +15,10 @@ const Code: FC<{ language: 'json5' | 'bash' }> = ({ children, language }) => {
   }, [children]);
   return (
     <Editor>
-      <pre className={`language-${language}`}>
+      <pre
+        className={`language-${language}`}
+        style={{ maxHeight: '20rem', overflow: 'auto' }}
+      >
         <code>{children}</code>
       </pre>
     </Editor>

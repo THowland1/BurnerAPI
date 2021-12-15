@@ -1,6 +1,6 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { endpoints } from '../../../utils/airtable';
+import { endpoints, toRecId } from '../../../utils/airtable';
 import { applyODataParams } from '../../../utils/apply-odata-params';
 
 export default async function handler(
@@ -17,10 +17,11 @@ export default async function handler(
         )})`
       );
     }
+    const recId = toRecId(endpointId);
     switch (req.method) {
       case 'GET':
-        const existingEndpoint = await endpoints.find(endpointId);
-        console.log(existingEndpoint);
+        const existingEndpoint = await endpoints.find(recId);
+
         const rawData = existingEndpoint.fields.raw;
         if (typeof rawData !== 'string') {
           throw new Error('rawData must be a string');
@@ -33,14 +34,12 @@ export default async function handler(
         res.status(200).json(processedData);
         break;
       case 'PUT':
-        const { id, ...fields } = JSON.parse(req.body);
-        const updatedEndpoint = await endpoints.update([
-          { id: endpointId, fields },
-        ]);
+        const { id: _, ...fields } = JSON.parse(req.body);
+        const updatedEndpoint = await endpoints.update([{ id: recId, fields }]);
         res.status(200).json(updatedEndpoint);
         break;
       case 'DELETE':
-        const deletedEndpoint = await endpoints.destroy(endpointId);
+        const deletedEndpoint = await endpoints.destroy(recId);
         res.status(200).json(deletedEndpoint);
         break;
       default:

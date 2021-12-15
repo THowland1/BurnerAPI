@@ -24,6 +24,11 @@ const Code = dynamic(() => import('../Code'), {
   ssr: false,
 });
 
+const JSONEditor = dynamic(() => import('../json-editor'), {
+  loading: () => <>...</>,
+  ssr: false,
+});
+
 const Spacer: FC<{ size?: string }> = ({ size = '1rem' }) => (
   <Box sx={{ display: 'inline-block', height: size, width: size }} />
 );
@@ -61,7 +66,13 @@ const RestEndpointCards: FC<{ endpointId: string | null }> = ({
   }, [origin, endpointId, setGetAllUrl]);
 
   return (
-    <>
+    <div
+      style={
+        endpointId
+          ? { opacity: 1 }
+          : { opacity: 0.5, pointerEvents: 'none', userSelect: 'none' }
+      }
+    >
       <Typography
         variant='h3'
         component='h2'
@@ -79,8 +90,11 @@ const RestEndpointCards: FC<{ endpointId: string | null }> = ({
           <Typography variant='h3' component='h2'>
             Get all
           </Typography>
-          <Spacer size='.5rem' />
-          <Typography variant='body1' color={theme.palette.text.disabled}>
+          <Typography
+            variant='body1'
+            color={theme.palette.text.disabled}
+            sx={{ paddingTop: '.5rem' }}
+          >
             cURL
           </Typography>
           <Box
@@ -93,8 +107,11 @@ const RestEndpointCards: FC<{ endpointId: string | null }> = ({
           >
             <Code language='bash'>{`curl "${getAllUrl}"`}</Code>
           </Box>
-          <Spacer size='.5rem' />
-          <Typography variant='body1' color={theme.palette.text.disabled}>
+          <Typography
+            variant='body1'
+            color={theme.palette.text.disabled}
+            sx={{ paddingTop: '.5rem' }}
+          >
             Response
           </Typography>
           <Box
@@ -102,19 +119,27 @@ const RestEndpointCards: FC<{ endpointId: string | null }> = ({
               borderRadius: '.5rem',
               backgroundColor: theme.palette.grey['900'],
               color: 'white',
-              padding: '.5rem 1rem',
             }}
           >
-            <Code language='json5'>{getAllResponse}</Code>
+            <JSONEditor
+              readOnly
+              highlightActiveLine={false}
+              value={getAllResponse}
+              minLines={1}
+              wrapEnabled
+            />
           </Box>
-          <Spacer size='.5rem' />
-          <Typography variant='body1' color={theme.palette.text.disabled}>
+          <Typography
+            variant='body1'
+            color={theme.palette.text.disabled}
+            sx={{ paddingTop: '.5rem' }}
+          >
             Parameters
           </Typography>
           <ParamsTable />
         </CardContent>
       </Card>
-    </>
+    </div>
   );
 };
 
