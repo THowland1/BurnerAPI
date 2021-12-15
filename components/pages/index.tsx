@@ -144,7 +144,7 @@ const Home: NextPage = () => {
     if (schema.items.type !== 'object') {
       return;
     }
-    const props = Object.entries(schema.items.properties);
+    const props: [string, any][] = Object.entries(schema.items.properties);
     const keys = props
       .filter(
         ([_, value]) => value.type === 'number' || value.type === 'string'
