@@ -3,7 +3,6 @@ import safeGet from 'just-safe-get';
 import { ISortCondition, sortByAll } from './sort-by-all';
 import { deepPick } from './deep-pick';
 import get from 'just-safe-get';
-
 type ODataParams = {
   $filter: Filter;
   $orderby: Record<string, 'asc' | 'desc'>[];

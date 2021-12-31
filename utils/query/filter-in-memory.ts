@@ -1,82 +1,6 @@
 import get from 'just-safe-get';
-
-type PropertyOperand = {
-  type: 'property';
-  name: string;
-};
-type LiteralOperand = {
-  type: 'literal';
-  value: any;
-};
-type Operand = PropertyOperand | LiteralOperand;
-
-type EQFilter = {
-  type: 'eq';
-  left: Operand;
-  right: Operand;
-};
-type LTFilter = {
-  type: 'lt';
-  left: Operand;
-  right: Operand;
-};
-type GTFilter = {
-  type: 'gt';
-  left: Operand;
-  right: Operand;
-};
-type LEFilter = {
-  type: 'le';
-  left: Operand;
-  right: Operand;
-};
-type GEFilter = {
-  type: 'ge';
-  left: Operand;
-  right: Operand;
-};
-type NEFilter = {
-  type: 'ne';
-  left: Operand;
-  right: Operand;
-};
-type SubstringofFilter = {
-  type: 'functioncall';
-  func: 'substringof';
-  args: [Operand, Operand];
-};
-type StartswithFilter = {
-  type: 'functioncall';
-  func: 'startswith';
-  args: [Operand, Operand];
-};
-type EndswithFilter = {
-  type: 'functioncall';
-  func: 'endswith';
-  args: [Operand, Operand];
-};
-type AndFilter = {
-  type: 'and';
-  left: Filter;
-  right: Filter;
-};
-type OrFilter = {
-  type: 'or';
-  left: Filter;
-  right: Filter;
-};
-type Filter =
-  | EQFilter
-  | LTFilter
-  | GTFilter
-  | LEFilter
-  | GEFilter
-  | NEFilter
-  | SubstringofFilter
-  | AndFilter
-  | OrFilter
-  | StartswithFilter
-  | EndswithFilter;
+import { Filter, Operand } from 'odata-parser';
+import * as Assert from '../assert';
 
 const getOperandValue = <T>(item: T, operand: Operand) => {
   switch (operand.type) {
@@ -84,6 +8,86 @@ const getOperandValue = <T>(item: T, operand: Operand) => {
       return operand.value;
     case 'property':
       return get(item, operand.name.replaceAll('/', '.'));
+    case 'functioncall':
+      const arg0 = getOperandValue(item, operand.args[0]);
+      switch (operand.func) {
+        // string functions
+        case 'tolower':
+        case 'toupper':
+        case 'trim':
+        case 'length':
+          Assert.string(arg0, `${operand.func} can only be used on strings`);
+          const stringArg0: string = arg0;
+          return {
+            tolower: () => stringArg0.toLowerCase(),
+            toupper: () => stringArg0.toUpperCase(),
+            trim: () => stringArg0.trim(),
+            length: () => stringArg0.length,
+          }[operand.func]();
+        // date functions
+        case 'year':
+        case 'month':
+        case 'day':
+        case 'hour':
+        case 'minute':
+        case 'second':
+          Assert.stringOrNumber(arg0, `${operand.func} can only be used on strings or numbers`); // prettier-ignore
+          const arg0AsDate: Date = new Date(arg0);
+          Assert.notNaN(arg0AsDate.valueOf(),`${operand.func} can only be used on valid dates (${arg0} cannot be parsed as a date)`); // prettier-ignore
+          return {
+            year: () => arg0AsDate.getFullYear(),
+            month: () => arg0AsDate.getMonth(),
+            day: () => arg0AsDate.getDay(),
+            hour: () => arg0AsDate.getHours(),
+            minute: () => arg0AsDate.getMinutes(),
+            second: () => arg0AsDate.getSeconds(),
+          }[operand.func]();
+        // number functions
+        case 'round':
+        case 'floor':
+        case 'ceiling':
+          Assert.number(arg0, `${operand.func} can only be used on numbers`);
+          const numberArg0: number = arg0;
+          return {
+            round: () => Math.round(numberArg0),
+            floor: () => Math.floor(numberArg0),
+            ceiling: () => Math.ceil(numberArg0),
+          }[operand.func]();
+        // string-string functions
+        case 'indexof':
+        case 'concat':
+        case 'substring':
+          const arg1 = getOperandValue(item, operand.args[1]);
+          Assert.string(arg0, `${operand.func} can only be used on string-string pairs`); // prettier-ignore
+          Assert.string(arg1, `${operand.func} can only be used on string-string pairs`); // prettier-ignore
+          const stringstringArg0: string = arg0;
+          const stringstringArg1: string = arg1;
+          return {
+            indexof: () => stringstringArg0.indexOf(stringstringArg1),
+            concat: () => stringstringArg0.concat(stringstringArg1),
+            substring: () => stringstringArg0.concat(stringstringArg1),
+          }[operand.func]();
+        // string-string-string functions
+        case 'replace':
+          const arg01 = getOperandValue(item, operand.args[1]);
+          const arg02 = getOperandValue(item, operand.args[2]);
+          Assert.string(arg0, `${operand.func} can only be used on string-string-string triplets`); // prettier-ignore
+          Assert.string(arg01, `${operand.func} can only be used on string-string-string triplets`); // prettier-ignore
+          Assert.string(arg02, `${operand.func} can only be used on string-string-string triplets`); // prettier-ignore
+          const stringstringstringArg0: string = arg0;
+          const stringstringstringArg1: string = arg01;
+          const stringstringstringArg2: string = arg02;
+          return {
+            replace: () =>
+              stringstringstringArg0.replaceAll(
+                stringstringstringArg1,
+                stringstringstringArg2
+              ),
+          }[operand.func]();
+
+        default:
+          throw new Error(`Transform method "${operand}" not supported yet`);
+      }
 
     default:
       throw new Error('Could not figure out which value is wanted');
@@ -125,7 +129,7 @@ const getFilterFn = <U>($filter: Filter): ((o: U) => boolean) => {
     case 'functioncall':
       const validateAndGetOperand = (o: 0 | 1) => {
         return <T>(item: T) => {
-          const left = getOperandValue(item, $filter.args[o]);
+          const left = getOperandValue(item, $filter.args[o]!);
           if (typeof left !== 'string') {
             throw new Error(
               `Filter method "${
@@ -159,7 +163,6 @@ const getFilterFn = <U>($filter: Filter): ((o: U) => boolean) => {
             const right = validateAndGetOperand(1)(o);
             return right.includes(left);
           };
-
         default:
           throw new Error(
             `Filter method "${($filter as any).func}" not supported yet`
@@ -179,12 +182,8 @@ const getFilterFn = <U>($filter: Filter): ((o: U) => boolean) => {
   }
 };
 
-export type FilterOptions = {
-  filter: Filter;
-};
-export type FilterSummary = {
-  filter: Filter;
-};
+export type FilterOptions = Filter | null;
+export type FilterSummary = Filter | null;
 export type FilterResult<T> = {
   data: T[];
   summary: FilterSummary;
@@ -193,6 +192,9 @@ export function filterInMemory<T>(
   data: T[],
   opts: FilterOptions
 ): FilterResult<T> {
-  const filteredData = data.filter(getFilterFn(opts.filter));
+  if (opts === null) {
+    return { data, summary: opts };
+  }
+  const filteredData = data.filter(getFilterFn(opts));
   return { data: filteredData, summary: opts };
 }

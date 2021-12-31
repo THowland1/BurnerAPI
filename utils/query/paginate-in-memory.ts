@@ -1,6 +1,6 @@
 type CursorPaginationOptions = {
   type: 'cursor';
-  after: string;
+  after: string | null;
   top: number;
 };
 
@@ -93,10 +93,14 @@ function paginateWithCursor<T>(
     };
   }
 
-  const cursorIndex = data.findIndex(
-    (item) => cursorSelector(item) === opts.after
-  );
-  const firstIndex = cursorIndex + 1;
+  let firstIndex = 0;
+  if (opts.after) {
+    const cursorIndex = data.findIndex(
+      (item) => cursorSelector(item) === opts.after
+    );
+
+    firstIndex = cursorIndex + 1;
+  }
 
   const paginatedData = data.slice(firstIndex, firstIndex + opts.top);
 
