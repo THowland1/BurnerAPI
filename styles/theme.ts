@@ -44,7 +44,7 @@ export const theme = createTheme({
     },
     text: {
       primary: '#0E1E25',
-      secondary: '#F7F8F8',
+      //   secondary: '#F7F8F8',
     },
   },
   typography: {

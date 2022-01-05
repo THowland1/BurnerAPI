@@ -1,8 +1,10 @@
 import { Card, CardContent, Theme, Typography } from '@mui/material';
 import { Box, useTheme } from '@mui/system';
+import { JSONSchema4 } from 'json-schema';
 import json5 from 'json5';
 import dynamic from 'next/dynamic';
 import React, { FC, useEffect, useState } from 'react';
+import ParamsForm from './ParamsForm';
 import ParamsTable from './ParamsTable';
 
 async function getData(url = '') {
@@ -46,6 +48,7 @@ const RestEndpointCards: FC<{ endpointId: string | null }> = ({
   // you'll see when you create your endpoint
   // ... 
 }`);
+  const [schema, setSchema] = useState<JSONSchema4 | null>(null);
 
   useEffect(() => {
     setOrigin(window.location.origin);
@@ -58,8 +61,12 @@ const RestEndpointCards: FC<{ endpointId: string | null }> = ({
       }`;
       setGetAllUrl(newUrl);
       if (origin && endpointId) {
-        const response = await getData(newUrl);
-        setGetAllResponse(json5.stringify(response, null, 2));
+        const [dataResponse, schemaResponse] = await Promise.all([
+          getData(newUrl),
+          getData(newUrl + '/schema'),
+        ]);
+        setGetAllResponse(json5.stringify(dataResponse, null, 2));
+        setSchema(schemaResponse);
       }
     }
     run();
@@ -90,6 +97,14 @@ const RestEndpointCards: FC<{ endpointId: string | null }> = ({
           <Typography variant='h3' component='h2'>
             Get all
           </Typography>
+          <Typography
+            variant='body1'
+            color={theme.palette.text.disabled}
+            sx={{ paddingTop: '.5rem' }}
+          >
+            Parameters
+          </Typography>
+          {schema ? <ParamsForm schema={schema} /> : <>...</>}
           <Typography
             variant='body1'
             color={theme.palette.text.disabled}
@@ -129,13 +144,7 @@ const RestEndpointCards: FC<{ endpointId: string | null }> = ({
               wrapEnabled
             />
           </Box>
-          <Typography
-            variant='body1'
-            color={theme.palette.text.disabled}
-            sx={{ paddingTop: '.5rem' }}
-          >
-            Parameters
-          </Typography>
+
           <ParamsTable />
         </CardContent>
       </Card>

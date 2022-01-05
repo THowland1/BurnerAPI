@@ -114,7 +114,7 @@ const Home: NextPage = () => {
 ]`);
   const [idPropName, setIdPropName] = useState<string>(UNSET);
   const [idPropNameOptions, setIdPropNameOptions] = useState<string[]>([]);
-  const [endpointId, setEndpointId] = useState<string | null>(null);
+  const [endpointId, setEndpointId] = useState<string | null>('Q5AoCfAEgZRjtO'); //
 
   const createApi = async () => {
     const response = await postData('/api/endpoints', {
@@ -141,13 +141,22 @@ const Home: NextPage = () => {
       return;
     }
     const schema = GenerateSchema.json('data', json);
-    if (schema.items.type !== 'object') {
+    const toplevelItems = schema?.items;
+    if (!toplevelItems || Array.isArray(toplevelItems)) {
       return;
     }
-    const props: [string, any][] = Object.entries(schema.items.properties);
+    const toplevelItemsProps = toplevelItems.properties;
+    if (!toplevelItemsProps) {
+      return;
+    }
+    const props = Object.entries(toplevelItemsProps);
     const keys = props
       .filter(
-        ([_, value]) => value.type === 'number' || value.type === 'string'
+        ([_, value]) =>
+          value.type === 'number' ||
+          value.type === 'string' ||
+          value.type === 'integer' ||
+          value.type === 'boolean'
       )
       .map(([key]) => key);
     setIdPropNameOptions(keys);
@@ -192,17 +201,19 @@ const Home: NextPage = () => {
     }
 
     const schema = GenerateSchema.json('data', json);
-    if (schema.items.type === 'object') {
+    const schemaItems = schema.items;
+    if (!Array.isArray(schemaItems) && schemaItems?.type === 'object') {
       response.isArrayOfObjects = true;
     } else {
       return response;
     }
 
-    const keys = Object.keys(schema.items.properties);
-    const requiredKeys = schema.items.required;
-    const eachPropHasSingleType = (
-      Object.values(schema.items.properties) as { type: any }[]
-    ).every((o) => typeof o.type === 'string');
+    const schemaItemsProperties = schemaItems?.properties || {};
+    const keys = Object.keys(schemaItemsProperties);
+    const requiredKeys = schemaItems.required;
+    const eachPropHasSingleType = Object.values(schemaItemsProperties).every(
+      (o) => typeof o.type === 'string'
+    );
     if (
       (!requiredKeys || compare(keys, requiredKeys)) &&
       eachPropHasSingleType
